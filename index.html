@@ -1,19 +1,212 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Scanner PWA</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="manifest" href="manifest.json">
-</head>
-<body>
-    <h1>Barcode Scanner PWA</h1>
-    <button id="scanBtn">Scan Barcode</button>
-    <ul id="barcodeList"></ul>
-    <button onclick="downloadTxtFile()">Download as .txt</button>
 
-    <script src="https://unpkg.com/@zxing/library@latest"></script>
-    <script src="app.js"></script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="ZXing for JS">
+
+  <title>Barcode Scanner</title>
+
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
+    href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
+    href="https://unpkg.com/normalize.css@8.0.0/normalize.css">
+  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
+    href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css">
+
+  <style>
+    body {
+      display: flex;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      width: 70%;
+      margin: 20px;
+    }
+
+    .video-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    video {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .button-container {
+      display:block;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 0px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 0 5px;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    .result-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      position: fixed;
+      right: 20px;
+      top: 20px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: #f8f8f8;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      border-radius: 5px;
+      color: #fff;
+      display: none;
+      font-size: 16px;
+    }
+
+    .notification.success {
+      background-color: #4CAF50; /* Green */
+    }
+
+    .notification.error {
+      background-color: #F44336; /* Red */
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="video-container">
+      <h1 class="title">Sevdi Tekstil Barkod Okuma</h1>
+      <div class="button-container">
+        <a class="button" id="startButton">Başlat</a>
+        <a class="button" id="resetButton">Baştan Başla</a>
+        <a class="button" id="downloadButton">Dosya İndir</a>
+      </div>
+      <div>
+        <video id="video" width="600" height="400"></video>
+      </div>
+    </div>
+    <div class="result-container">
+      <label>Barkod Listesi:</label>
+      <ul id="resultList"></ul>
+    </div>
+    <div id="notification" class="notification"></div>
+  </main>
+
+  <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+  <script type="text/javascript">
+    window.addEventListener('load', function () {
+      let selectedDeviceId;
+      const codeReader = new ZXing.BrowserMultiFormatReader();
+      console.log('ZXing code reader initialized');
+
+      const uniqueBarcodes = new Set(); // Set to store unique barcodes
+      const notification = document.getElementById('notification');
+
+      function showNotification(message, type, duration) {
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.style.display = 'block';
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, duration);
+      }
+
+      codeReader.listVideoInputDevices()
+        .then((videoInputDevices) => {
+          if (videoInputDevices.length > 0) {
+            selectedDeviceId = videoInputDevices[0].deviceId;
+
+            document.getElementById('startButton').addEventListener('click', () => {
+              codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
+                if (result) {
+                  console.log(result);
+                  const barcodeText = result.text;
+                  if (!uniqueBarcodes.has(barcodeText)) { // Check if barcode is unique
+                    uniqueBarcodes.add(barcodeText); // Add to the set
+                    const resultList = document.getElementById('resultList');
+                    const li = document.createElement('li');
+                    li.textContent = barcodeText;
+                    resultList.appendChild(li);
+                    showNotification('Barkod okuma başarılı', 'success', 2000);
+                  } else {
+                    showNotification('Bu barkod daha önce okundu', 'error', 3000);
+                  }
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                  console.error(err);
+                }
+              });
+              console.log(`Started continuous decode from camera with id ${selectedDeviceId}`);
+            });
+
+            document.getElementById('resetButton').addEventListener('click', () => {
+              codeReader.reset();
+              document.getElementById('resultList').innerHTML = '';
+              uniqueBarcodes.clear(); // Clear the set
+              console.log('Reset.');
+            });
+
+            document.getElementById('downloadButton').addEventListener('click', () => {
+              const barcodes = Array.from(uniqueBarcodes);
+              const blob = new Blob([barcodes.join('\n')], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'barcodes.txt';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+            });
+          } else {
+            console.error('No video input devices found.');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    });
+  </script>
+
 </body>
+
 </html>
