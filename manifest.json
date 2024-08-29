@@ -1,0 +1,15 @@
+{
+    "name": "Barcode Scanner PWA",
+    "short_name": "Barcode Scanner",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "icons": [
+        {
+            "src": "/path/to/icon.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ]
+}
