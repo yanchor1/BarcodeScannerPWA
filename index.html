@@ -18,6 +18,8 @@
   <style>
     body {
       display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       min-height: 100vh;
       margin: 0;
       background-color: #f0f0f0;
@@ -27,6 +29,7 @@
     .container {
       display: flex;
       flex-direction: column;
+      align-items: center;
       width: 70%;
       margin: 20px;
     }
@@ -46,20 +49,23 @@
     }
 
     .button-container {
-      display:block;
+      display: flex;
+      gap: 10px;
       margin-bottom: 20px;
+      justify-content: center;
     }
 
     .button {
       background-color: #007BFF;
       color: white;
       border: none;
-      padding: 0px 20px;
+      padding: 10px 20px;
       font-size: 16px;
       border-radius: 5px;
       cursor: pointer;
-      margin: 0 5px;
       transition: background-color 0.3s;
+      text-align: center;
+      min-width: 100px;
     }
 
     .button:hover {
@@ -75,12 +81,13 @@
       max-width: 400px;
       position: fixed;
       right: 20px;
-      top: 20px;
+      bottom: 20px;
     }
 
     ul {
       list-style: none;
       padding: 0;
+      margin: 0;
     }
 
     li {
@@ -188,11 +195,12 @@
 
             document.getElementById('downloadButton').addEventListener('click', () => {
               const barcodes = Array.from(uniqueBarcodes);
+              const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
               const blob = new Blob([barcodes.join('\n')], { type: 'text/plain' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = 'barcodes.txt';
+              a.download = `barkod-listesi-${today}.txt`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);
