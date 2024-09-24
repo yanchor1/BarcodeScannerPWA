@@ -8,12 +8,9 @@
 
   <title>Barcode Scanner</title>
 
-  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
-    href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
-    href="https://unpkg.com/normalize.css@8.0.0/normalize.css">
-  <link rel="stylesheet" rel="preload" as="style" onload="this.rel='stylesheet';this.onload=null"
-    href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="https://unpkg.com/normalize.css@8.0.0/normalize.css">
+  <link rel="stylesheet" href="https://unpkg.com/milligram@1.3.0/dist/milligram.min.css">
 
   <style>
     body {
@@ -140,81 +137,7 @@
   </main>
 
   <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
-  <script type="text/javascript">
-    window.addEventListener('load', function () {
-      let selectedDeviceId;
-      const codeReader = new ZXing.BrowserMultiFormatReader();
-      console.log('ZXing code reader initialized');
-
-      const uniqueBarcodes = new Set(); // Set to store unique barcodes
-      const notification = document.getElementById('notification');
-
-      function showNotification(message, type, duration) {
-        notification.textContent = message;
-        notification.className = `notification ${type}`;
-        notification.style.display = 'block';
-        setTimeout(() => {
-          notification.style.display = 'none';
-        }, duration);
-      }
-
-      codeReader.listVideoInputDevices()
-        .then((videoInputDevices) => {
-          if (videoInputDevices.length > 0) {
-            selectedDeviceId = videoInputDevices[0].deviceId;
-
-            document.getElementById('startButton').addEventListener('click', () => {
-              codeReader.decodeFromVideoDevice(selectedDeviceId, 'video', (result, err) => {
-                if (result) {
-                  console.log(result);
-                  const barcodeText = result.text;
-                  if (!uniqueBarcodes.has(barcodeText)) { // Check if barcode is unique
-                    uniqueBarcodes.add(barcodeText); // Add to the set
-                    const resultList = document.getElementById('resultList');
-                    const li = document.createElement('li');
-                    li.textContent = barcodeText;
-                    resultList.appendChild(li);
-                    showNotification('Barkod okuma başarılı', 'success', 2000);
-                  } else {
-                    showNotification('Bu barkod daha önce okundu', 'error', 3000);
-                  }
-                }
-                if (err && !(err instanceof ZXing.NotFoundException)) {
-                  console.error(err);
-                }
-              });
-              console.log(`Started continuous decode from camera with id ${selectedDeviceId}`);
-            });
-
-            document.getElementById('resetButton').addEventListener('click', () => {
-              codeReader.reset();
-              document.getElementById('resultList').innerHTML = '';
-              uniqueBarcodes.clear(); // Clear the set
-              console.log('Reset.');
-            });
-
-            document.getElementById('downloadButton').addEventListener('click', () => {
-              const barcodes = Array.from(uniqueBarcodes);
-              const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-              const blob = new Blob([barcodes.join('\n')], { type: 'text/plain' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `barkod-listesi-${today}.txt`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            });
-          } else {
-            console.error('No video input devices found.');
-          }
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    });
-  </script>
-
+  <script type="text/javascript" src="script.js"></script>
 </body>
 
 </html>
